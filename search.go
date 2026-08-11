@@ -166,6 +166,28 @@ func (c *Client) ReadPosting(ctx context.Context, rawURL string) (model.Normaliz
 	return reader.ReadPosting(ctx, rawURL, c.configFor(ctx, src.Key()))
 }
 
+// JobDetail reads a single posting page into the structured record every
+// source shares: company, salary, location, requirements, timeline, activity.
+//
+// A source implementing ports.JobDetailReader parses the page in full. A source
+// that only implements ports.PostingReader still answers — its posting is
+// projected into the same shape with fewer fields filled — so a caller never
+// branches on which site the URL belongs to. Fields the page does not state
+// stay at their zero value.
+//
+// It returns an adapter.NoPostingReaderError when no source recognises the URL.
+func (c *Client) JobDetail(ctx context.Context, rawURL string) (model.JobDetail, error) {
+	if src, reader, err := c.registry.JobDetailReaderFor(rawURL); err == nil {
+		return reader.ReadJobDetail(ctx, rawURL, c.configFor(ctx, src.Key()))
+	}
+
+	job, err := c.ReadPosting(ctx, rawURL)
+	if err != nil {
+		return model.JobDetail{}, err
+	}
+	return model.JobDetailFrom(job), nil
+}
+
 // EmployerReport returns the per-employer detail from the last run of an ATS
 // vendor source. It reports false for a source that does not iterate employer
 // boards.
