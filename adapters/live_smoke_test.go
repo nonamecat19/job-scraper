@@ -1,0 +1,60 @@
+//go:build live
+
+package adapters
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/job-finder/jobscraper/model"
+	"github.com/job-finder/jobscraper/scraping"
+)
+
+func TestLive_Remotive(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	jobs, err := RemotiveAdapter{}.Search(ctx, model.SearchQuery{Keywords: "golang"}, nil)
+	if err != nil {
+		t.Fatalf("remotive search failed: %v", err)
+	}
+	t.Logf("remotive returned %d jobs", len(jobs))
+	if len(jobs) > 0 {
+		t.Logf("sample: %+v", jobs[0])
+	}
+}
+
+func TestLive_Arbeitnow(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	jobs, err := ArbeitnowAdapter{}.Search(ctx, model.SearchQuery{Keywords: "engineer"}, nil)
+	if err != nil {
+		t.Fatalf("arbeitnow search failed: %v", err)
+	}
+	t.Logf("arbeitnow returned %d jobs", len(jobs))
+}
+
+func TestLive_WorkUa(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	a := WorkUaAdapter{Scraping: scraping.New()}
+	jobs, err := a.Search(ctx, model.SearchQuery{Keywords: "php"}, nil)
+	if err != nil {
+		t.Fatalf("workua search failed: %v", err)
+	}
+	t.Logf("workua returned %d jobs", len(jobs))
+	if len(jobs) > 0 {
+		t.Logf("sample: %+v", jobs[0])
+	}
+	if len(jobs) == 0 {
+		t.Error("expected at least 1 job from live search")
+	}
+}
+
+func TestLive_Adzuna_NoCreds(t *testing.T) {
+	ctx := context.Background()
+	_, err := AdzunaAdapter{}.Search(ctx, model.SearchQuery{Keywords: "engineer"}, nil)
+	if err == nil {
+		t.Fatal("expected error without credentials")
+	}
+}
