@@ -74,6 +74,13 @@ func AsPostingReader(src ports.JobSource) (ports.PostingReader, bool) {
 	return As[ports.PostingReader](src)
 }
 
+// AsJobDetailReader returns src's JobDetailReader, if it has one. A source
+// without one can still produce a JobDetail through the client, projected from
+// its PostingReader.
+func AsJobDetailReader(src ports.JobSource) (ports.JobDetailReader, bool) {
+	return As[ports.JobDetailReader](src)
+}
+
 // AsEmployerReporter returns src's EmployerReporter, if it has one.
 func AsEmployerReporter(src ports.JobSource) (ports.EmployerReporter, bool) {
 	return As[ports.EmployerReporter](src)

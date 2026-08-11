@@ -141,6 +141,25 @@ func (r *Registry) PostingReaderFor(rawURL string) (ports.JobSource, ports.Posti
 	return nil, nil, NoPostingReaderError{URL: rawURL}
 }
 
+// JobDetailReaderFor returns the first source that claims rawURL and can read
+// it into a full JobDetail, consulted in registration order.
+//
+// A source claiming the URL with only a PostingReader is not a match: the
+// caller falls back to projecting a JobDetail from the posting, which is the
+// client's job rather than the registry's.
+func (r *Registry) JobDetailReaderFor(rawURL string) (ports.JobSource, ports.JobDetailReader, error) {
+	for _, s := range r.All() {
+		dr, ok := AsJobDetailReader(s)
+		if !ok {
+			continue
+		}
+		if dr.MatchesPostingURL(rawURL) {
+			return s, dr, nil
+		}
+	}
+	return nil, nil, NoPostingReaderError{URL: rawURL}
+}
+
 // Decorate wraps every registered source with mw, in place. Call it once after
 // registration and before the registry is shared.
 func (r *Registry) Decorate(mw func(ports.JobSource) ports.JobSource) {
