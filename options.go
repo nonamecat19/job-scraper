@@ -4,9 +4,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/adapter/middleware"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/adapter/middleware"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Option configures a Client. Options are applied in order, so a later one

@@ -2,7 +2,7 @@
 //
 // Import it for its side effects when you want the full set:
 //
-//	import _ "github.com/nonamecat19/jobscraper/adapters/all"
+//	import _ "github.com/nonamecat19/job-scraper/adapters/all"
 //
 // The root jobscraper package imports it already, so a caller using
 // jobscraper.New gets every source without doing anything.
@@ -14,26 +14,26 @@
 package all
 
 import (
-	_ "github.com/nonamecat19/jobscraper/adapters/adzuna"
-	_ "github.com/nonamecat19/jobscraper/adapters/arbeitnow"
-	_ "github.com/nonamecat19/jobscraper/adapters/ashby"
-	_ "github.com/nonamecat19/jobscraper/adapters/djinni"
-	_ "github.com/nonamecat19/jobscraper/adapters/dou"
-	_ "github.com/nonamecat19/jobscraper/adapters/glassdoor"
-	_ "github.com/nonamecat19/jobscraper/adapters/greenhouse"
-	_ "github.com/nonamecat19/jobscraper/adapters/himalayas"
-	_ "github.com/nonamecat19/jobscraper/adapters/indeed"
-	_ "github.com/nonamecat19/jobscraper/adapters/jobgether"
-	_ "github.com/nonamecat19/jobscraper/adapters/jobleads"
-	_ "github.com/nonamecat19/jobscraper/adapters/jobspy"
-	_ "github.com/nonamecat19/jobscraper/adapters/jooble"
-	_ "github.com/nonamecat19/jobscraper/adapters/lever"
-	_ "github.com/nonamecat19/jobscraper/adapters/manual"
-	_ "github.com/nonamecat19/jobscraper/adapters/remoteok"
-	_ "github.com/nonamecat19/jobscraper/adapters/remotive"
-	_ "github.com/nonamecat19/jobscraper/adapters/robota"
-	_ "github.com/nonamecat19/jobscraper/adapters/smartrecruiters"
-	_ "github.com/nonamecat19/jobscraper/adapters/wellfound"
-	_ "github.com/nonamecat19/jobscraper/adapters/workable"
-	_ "github.com/nonamecat19/jobscraper/adapters/workua"
+	_ "github.com/nonamecat19/job-scraper/adapters/adzuna"
+	_ "github.com/nonamecat19/job-scraper/adapters/arbeitnow"
+	_ "github.com/nonamecat19/job-scraper/adapters/ashby"
+	_ "github.com/nonamecat19/job-scraper/adapters/djinni"
+	_ "github.com/nonamecat19/job-scraper/adapters/dou"
+	_ "github.com/nonamecat19/job-scraper/adapters/glassdoor"
+	_ "github.com/nonamecat19/job-scraper/adapters/greenhouse"
+	_ "github.com/nonamecat19/job-scraper/adapters/himalayas"
+	_ "github.com/nonamecat19/job-scraper/adapters/indeed"
+	_ "github.com/nonamecat19/job-scraper/adapters/jobgether"
+	_ "github.com/nonamecat19/job-scraper/adapters/jobleads"
+	_ "github.com/nonamecat19/job-scraper/adapters/jobspy"
+	_ "github.com/nonamecat19/job-scraper/adapters/jooble"
+	_ "github.com/nonamecat19/job-scraper/adapters/lever"
+	_ "github.com/nonamecat19/job-scraper/adapters/manual"
+	_ "github.com/nonamecat19/job-scraper/adapters/remoteok"
+	_ "github.com/nonamecat19/job-scraper/adapters/remotive"
+	_ "github.com/nonamecat19/job-scraper/adapters/robota"
+	_ "github.com/nonamecat19/job-scraper/adapters/smartrecruiters"
+	_ "github.com/nonamecat19/job-scraper/adapters/wellfound"
+	_ "github.com/nonamecat19/job-scraper/adapters/workable"
+	_ "github.com/nonamecat19/job-scraper/adapters/workua"
 )

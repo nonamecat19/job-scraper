@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/internal/scraping"
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/internal/scraping"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 func loadHimalayasFixture(t *testing.T, name string) string {

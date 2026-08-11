@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"runtime/debug"
 
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // PanicError wraps a panic that escaped a source, so a caller sees an ordinary

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/internal/httpjson"
-	"github.com/nonamecat19/jobscraper/internal/strutil"
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/internal/httpjson"
+	"github.com/nonamecat19/job-scraper/internal/strutil"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 const (

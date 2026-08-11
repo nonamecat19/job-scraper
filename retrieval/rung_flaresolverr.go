@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // FlareSolverrRung delegates the fetch to a FlareSolverr sidecar, which solves

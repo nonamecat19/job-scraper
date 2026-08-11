@@ -1,4 +1,4 @@
-module github.com/nonamecat19/jobscraper
+module github.com/nonamecat19/job-scraper
 
 go 1.26.5
 

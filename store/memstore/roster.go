@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Roster is an in-memory ports.Roster. It is what makes the ATS sources usable

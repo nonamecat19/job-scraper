@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 func TestManualAdapterHasNoPostingReader(t *testing.T) {

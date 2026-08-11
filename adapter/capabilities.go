@@ -1,6 +1,6 @@
 package adapter
 
-import "github.com/nonamecat19/jobscraper/ports"
+import "github.com/nonamecat19/job-scraper/ports"
 
 // Unwrapper is implemented by every decorator in adapter/middleware. It is how
 // As sees past the wrapping to the source underneath.

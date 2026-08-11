@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // StateStore is an in-memory ports.StateStore. The zero value is not usable;

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 func TestRemotiveResponseParsing(t *testing.T) {

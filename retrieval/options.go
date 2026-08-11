@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Option configures the engine. Options are applied in order, so a later one

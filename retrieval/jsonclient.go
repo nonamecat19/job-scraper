@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/internal/httpjson"
+	"github.com/nonamecat19/job-scraper/internal/httpjson"
 )
 
 // PacedClient is the http.Client the API-kind sources fetch through. It is an

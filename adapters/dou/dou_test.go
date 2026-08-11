@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 const douDetailFixtureHTML = `

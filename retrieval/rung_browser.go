@@ -7,7 +7,7 @@ import (
 
 	"github.com/chromedp/chromedp"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // BrowserRung drives a real headless Chrome. It is the middle strategy: it

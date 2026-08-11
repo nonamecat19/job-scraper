@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/internal/scraping"
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/internal/scraping"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 func TestDjinniKey(t *testing.T) {

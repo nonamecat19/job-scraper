@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 // SourceConfigStore is the per-source settings port. Credentialed sources use

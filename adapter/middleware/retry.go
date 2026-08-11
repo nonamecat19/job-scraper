@@ -6,8 +6,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // RetryConfig tunes the retry decorator. The zero value is usable: it retries

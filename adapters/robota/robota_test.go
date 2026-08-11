@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 func TestRobotaKey(t *testing.T) {

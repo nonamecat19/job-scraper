@@ -30,8 +30,8 @@ package middleware
 import (
 	"context"
 
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Middleware wraps a source in additional behaviour.

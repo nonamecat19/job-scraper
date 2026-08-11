@@ -3,7 +3,7 @@ package adapter
 import (
 	"context"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Registry holds the configured sources and preserves the order they were

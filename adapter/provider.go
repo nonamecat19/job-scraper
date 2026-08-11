@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Deps is everything a source may be built from. One bag rather than a
@@ -112,7 +112,7 @@ func Simple(key string, build func(deps Deps) ports.JobSource) Provider {
 // of available sources is what the binary imported rather than a switch
 // somebody has to remember to extend.
 //
-// Import github.com/nonamecat19/jobscraper/adapters/all to get every bundled
+// Import github.com/nonamecat19/job-scraper/adapters/all to get every bundled
 // source, or import only the vendor packages you want.
 type Catalog struct {
 	mu        sync.RWMutex

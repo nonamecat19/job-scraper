@@ -11,8 +11,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"github.com/nonamecat19/jobscraper/ports"
-	"github.com/nonamecat19/jobscraper/retrieval"
+	"github.com/nonamecat19/job-scraper/ports"
+	"github.com/nonamecat19/job-scraper/retrieval"
 )
 
 // FormLogin authenticates against an ordinary HTML login form: fetch the page,

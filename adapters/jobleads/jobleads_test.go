@@ -1,8 +1,8 @@
 package jobleads
 
 import (
-	"github.com/nonamecat19/jobscraper/ports"
-	"github.com/nonamecat19/jobscraper/session"
+	"github.com/nonamecat19/job-scraper/ports"
+	"github.com/nonamecat19/job-scraper/session"
 
 	"context"
 	"errors"
@@ -14,8 +14,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"github.com/nonamecat19/jobscraper/internal/scraping"
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/internal/scraping"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 func mustReadTestdata(t *testing.T, name string) string {

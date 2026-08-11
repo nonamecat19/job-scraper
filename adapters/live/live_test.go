@@ -12,13 +12,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/adapters/adzuna"
-	"github.com/nonamecat19/jobscraper/adapters/arbeitnow"
-	"github.com/nonamecat19/jobscraper/adapters/remotive"
-	"github.com/nonamecat19/jobscraper/adapters/workua"
-	"github.com/nonamecat19/jobscraper/internal/scraping"
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/adapters/adzuna"
+	"github.com/nonamecat19/job-scraper/adapters/arbeitnow"
+	"github.com/nonamecat19/job-scraper/adapters/remotive"
+	"github.com/nonamecat19/job-scraper/adapters/workua"
+	"github.com/nonamecat19/job-scraper/internal/scraping"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 func TestLive_Remotive(t *testing.T) {

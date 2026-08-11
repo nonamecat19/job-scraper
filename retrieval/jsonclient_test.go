@@ -9,10 +9,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/nonamecat19/jobscraper/adapters/remotive"
-	"github.com/nonamecat19/jobscraper/internal/httpjson"
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/retrieval"
+	"github.com/nonamecat19/job-scraper/adapters/remotive"
+	"github.com/nonamecat19/job-scraper/internal/httpjson"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/retrieval"
 )
 
 // recordingBase stands in for the network underneath DefaultTransport: it

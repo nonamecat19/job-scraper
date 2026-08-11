@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/nonamecat19/jobscraper/internal/scraping"
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/retrieval"
+	"github.com/nonamecat19/job-scraper/internal/scraping"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/retrieval"
 )
 
 func loadWellfoundFixture(t *testing.T, name string) string {

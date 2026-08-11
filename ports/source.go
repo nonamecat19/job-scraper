@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 // JobSource is the core port: one place jobs can be read from. Every adapter in

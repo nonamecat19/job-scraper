@@ -3,8 +3,8 @@ package remoteok
 import (
 	"fmt"
 
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Key is this source's registry key.

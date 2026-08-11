@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Engine is the bundled ports.Retriever: it walks a Ladder of strategies from

@@ -3,7 +3,7 @@ package retrieval
 import (
 	"strings"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // MarkerDetector classifies a fetched body by looking for known interstitial

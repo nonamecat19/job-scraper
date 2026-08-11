@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/nonamecat19/jobscraper/ports"
-	"github.com/nonamecat19/jobscraper/retrieval"
-	"github.com/nonamecat19/jobscraper/store/memstore"
+	"github.com/nonamecat19/job-scraper/ports"
+	"github.com/nonamecat19/job-scraper/retrieval"
+	"github.com/nonamecat19/job-scraper/store/memstore"
 )
 
 // TestEngineWithInMemoryStore drives the engine end to end with no database in

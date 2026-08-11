@@ -1,6 +1,10 @@
-# jobscraper
+# job-scraper
 
 A Go library that reads job postings from 22 sites behind one interface.
+
+```go
+import "github.com/nonamecat19/job-scraper" // package jobscraper
+```
 
 ```go
 client, err := jobscraper.New()
@@ -25,7 +29,7 @@ client is a working client.
 Each layer depends only on the interfaces in `ports`, never on the layer below.
 
 ```
-jobscraper/            Client — the facade. Wires everything, runs the fan-out.
+job-scraper/           Client — the facade. Wires everything, runs the fan-out.
 ├── ports/             Every interface, and the values they exchange.
 ├── model/             Domain types: NormalizedJob, SearchQuery.
 ├── adapter/           Registry, Provider/Catalog factories, capability helpers.

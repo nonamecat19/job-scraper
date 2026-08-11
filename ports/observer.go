@@ -3,7 +3,7 @@ package ports
 import (
 	"time"
 
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 // RunEvent is one notification emitted while a search runs.

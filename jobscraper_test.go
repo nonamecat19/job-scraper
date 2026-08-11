@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nonamecat19/jobscraper"
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/adapter/middleware"
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
-	"github.com/nonamecat19/jobscraper/store/memstore"
+	"github.com/nonamecat19/job-scraper"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/adapter/middleware"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
+	"github.com/nonamecat19/job-scraper/store/memstore"
 )
 
 // fakeSource is a JobSource with scripted behaviour, so the facade's fan-out

@@ -14,9 +14,9 @@ import (
 	"unicode/utf8"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/nonamecat19/jobscraper/internal/htmlutil"
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/internal/htmlutil"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 var douRemoteRe = regexp.MustCompile(`(?i)\bвіддалено\b|\bremote\b|\bдистанційно\b`)

@@ -24,8 +24,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/nonamecat19/jobscraper/internal/strutil"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/internal/strutil"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // configKey is the field a session cookie is persisted under in the source's

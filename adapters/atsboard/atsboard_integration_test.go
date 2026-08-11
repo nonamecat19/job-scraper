@@ -11,17 +11,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/adapters/ashby"
-	"github.com/nonamecat19/jobscraper/adapters/atsboard"
-	"github.com/nonamecat19/jobscraper/adapters/greenhouse"
-	"github.com/nonamecat19/jobscraper/adapters/lever"
-	"github.com/nonamecat19/jobscraper/adapters/smartrecruiters"
-	"github.com/nonamecat19/jobscraper/adapters/workable"
-	"github.com/nonamecat19/jobscraper/internal/httpjson"
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
-	"github.com/nonamecat19/jobscraper/store/memstore"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/adapters/ashby"
+	"github.com/nonamecat19/job-scraper/adapters/atsboard"
+	"github.com/nonamecat19/job-scraper/adapters/greenhouse"
+	"github.com/nonamecat19/job-scraper/adapters/lever"
+	"github.com/nonamecat19/job-scraper/adapters/smartrecruiters"
+	"github.com/nonamecat19/job-scraper/adapters/workable"
+	"github.com/nonamecat19/job-scraper/internal/httpjson"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
+	"github.com/nonamecat19/job-scraper/store/memstore"
 )
 
 // Every vendor's mock board serves the same four shapes, so one table can

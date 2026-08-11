@@ -5,7 +5,7 @@ import (
 	"maps"
 	"sync"
 
-	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/job-scraper/model"
 )
 
 // SourceConfigStore is an in-memory ports.SourceConfigStore. Credentialed

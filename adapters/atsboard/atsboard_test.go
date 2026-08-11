@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 func TestClassifyOutcome(t *testing.T) {

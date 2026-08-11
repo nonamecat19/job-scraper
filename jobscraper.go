@@ -57,13 +57,13 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/adapter/middleware"
-	_ "github.com/nonamecat19/jobscraper/adapters/all" // registers every bundled source
-	"github.com/nonamecat19/jobscraper/internal/scraping"
-	"github.com/nonamecat19/jobscraper/ports"
-	"github.com/nonamecat19/jobscraper/retrieval"
-	"github.com/nonamecat19/jobscraper/store/memstore"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/adapter/middleware"
+	_ "github.com/nonamecat19/job-scraper/adapters/all" // registers every bundled source
+	"github.com/nonamecat19/job-scraper/internal/scraping"
+	"github.com/nonamecat19/job-scraper/ports"
+	"github.com/nonamecat19/job-scraper/retrieval"
+	"github.com/nonamecat19/job-scraper/store/memstore"
 )
 
 // Client is the facade over the whole library: it owns the configured sources,

@@ -9,13 +9,13 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/nonamecat19/jobscraper/adapter"
-	"github.com/nonamecat19/jobscraper/adapters/atsboard"
-	"github.com/nonamecat19/jobscraper/internal/httpjson"
-	"github.com/nonamecat19/jobscraper/internal/jobtext"
-	"github.com/nonamecat19/jobscraper/internal/strutil"
-	"github.com/nonamecat19/jobscraper/model"
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/adapter"
+	"github.com/nonamecat19/job-scraper/adapters/atsboard"
+	"github.com/nonamecat19/job-scraper/internal/httpjson"
+	"github.com/nonamecat19/job-scraper/internal/jobtext"
+	"github.com/nonamecat19/job-scraper/internal/strutil"
+	"github.com/nonamecat19/job-scraper/model"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Key is this source's registry key.

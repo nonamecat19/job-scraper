@@ -3,7 +3,7 @@ package retrieval
 import (
 	"context"
 
-	"github.com/nonamecat19/jobscraper/ports"
+	"github.com/nonamecat19/job-scraper/ports"
 )
 
 // Rung keys. A key is stored in HostState.CurrentRung, so renaming one
