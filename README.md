@@ -170,3 +170,7 @@ go test ./...                        # unit tests, no network
 go test -tags integration ./...      # against local mock servers
 go test -tags live ./adapters/live/  # against the real sites; slow, flaky
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
