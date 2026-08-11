@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/job-finder/jobscraper/model"
-	"github.com/job-finder/jobscraper/scraping"
+	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/scraping"
 )
 
 func loadGlassdoorFixture(t *testing.T, name string) string {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/job-finder/jobscraper/httpjson"
-	"github.com/job-finder/jobscraper/model"
-	"github.com/job-finder/jobscraper/strutil"
+	"github.com/nonamecat19/jobscraper/httpjson"
+	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/strutil"
 )
 
 type jobspySidecarJob struct {

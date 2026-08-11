@@ -3,7 +3,7 @@ package adapter
 import (
 	"context"
 
-	"github.com/job-finder/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/model"
 )
 
 type Adapter interface {

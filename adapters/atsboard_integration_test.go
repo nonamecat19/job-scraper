@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	ads "github.com/job-finder/jobscraper/adapters"
-	"github.com/job-finder/jobscraper/httpjson"
-	"github.com/job-finder/jobscraper/model"
-	"github.com/job-finder/jobscraper/rosterport"
+	ads "github.com/nonamecat19/jobscraper/adapters"
+	"github.com/nonamecat19/jobscraper/httpjson"
+	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/rosterport"
 )
 
 func atsBoardMux(t *testing.T) *http.ServeMux {

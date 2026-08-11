@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/job-finder/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/model"
 )
 
 // ErrManualNotCrawlable is what the manual source returns when anything tries

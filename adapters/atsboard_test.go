@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/job-finder/jobscraper/adapter"
-	"github.com/job-finder/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/adapter"
+	"github.com/nonamecat19/jobscraper/model"
 )
 
 func TestClassifyOutcome(t *testing.T) {

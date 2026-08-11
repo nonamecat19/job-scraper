@@ -12,8 +12,8 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
-	"github.com/job-finder/jobscraper/model"
-	"github.com/job-finder/jobscraper/strutil"
+	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/strutil"
 )
 
 const djinniBaseURL = "https://djinni.co"

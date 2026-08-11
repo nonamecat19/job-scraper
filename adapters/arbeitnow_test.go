@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/job-finder/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/model"
 )
 
 func TestArbeitnowResponseParsing(t *testing.T) {

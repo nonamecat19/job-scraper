@@ -7,7 +7,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/job-finder/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/model"
 )
 
 func TestJobSpyResponseParsing(t *testing.T) {

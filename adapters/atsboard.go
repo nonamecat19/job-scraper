@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/job-finder/jobscraper/adapter"
-	"github.com/job-finder/jobscraper/model"
-	"github.com/job-finder/jobscraper/rosterport"
+	"github.com/nonamecat19/jobscraper/adapter"
+	"github.com/nonamecat19/jobscraper/model"
+	"github.com/nonamecat19/jobscraper/rosterport"
 )
 
 // MaxPostingsPerEmployer caps how many postings a single employer board can
