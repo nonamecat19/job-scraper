@@ -165,12 +165,17 @@ func parseDjinniCards(doc *goquery.Document) []model.NormalizedJob {
 	doc.Find(`[id^="job-item-"], li.list-jobs__item`).Each(func(_ int, item *goquery.Selection) {
 		link := item.Find(`a[href^="/jobs/"]`).First()
 		href, hasHref := link.Attr("href")
-		title := strings.TrimSpace(link.Text())
+		// The card's link wraps the whole header, so its text is the title,
+		// the company and the salary run together. The heading is the title.
+		title := strings.TrimSpace(item.Find(`.job-item__position`).First().Text())
+		if title == "" {
+			title = strings.TrimSpace(link.Text())
+		}
 		if !hasHref || href == "" || title == "" {
 			return
 		}
 
-		company := strings.TrimSpace(item.Find(`a[href^="/company/"], .js-analytics-company, [data-analytics="company_page"]`).First().Text())
+		company := strings.TrimSpace(item.Find(`.job-item__company-name, a[href*="/jobs/company-"], a[href^="/company/"], .js-analytics-company, [data-analytics="company_page"], .job-item__position + div span`).First().Text())
 		description := htmlutil.SelectionText(item.Find(`.js-truncated-text, .js-original-text, .text-card`).First())
 		salary := strings.TrimSpace(item.Find(`.public-salary-item, .text-success`).First().Text())
 		location := strings.TrimSpace(item.Find(`.location-text`).First().Text())
@@ -281,48 +286,20 @@ func (Source) MatchesPostingURL(rawURL string) bool {
 	return djinniPostingPathRe.MatchString(parsed.Path)
 }
 
-// ReadPosting implements adapter.PostingReader. It reuses FetchDetail's
-// selectors verbatim for description, salary, location, remote and postedAt, so
-// a manually added Djinni vacancy matches an enriched crawled one, and adds the
-// title and company selectors the detail path never needed.
+// ReadPosting implements ports.PostingReader by delegating to the detail path
+// and projecting the result, so a manually added Djinni vacancy is parsed by
+// exactly the code that parses a crawled one. Two parsers over one site's
+// markup is one parser too many: the second is always the stale one.
 //
 // Missing fields come back empty rather than as an error: a page that loads but
 // omits a description is the fill-in case, not a failure.
-func (d Source) ReadPosting(ctx context.Context, rawURL string, _ map[string]any) (model.NormalizedJob, error) {
-	// Anonymously, like the rest of the post-016 Djinni path, and through the
-	// same scraper so per-host pacing applies unchanged.
-	doc, err := d.fetchParse(ctx, rawURL, nil)
+func (d Source) ReadPosting(ctx context.Context, rawURL string, config map[string]any) (model.NormalizedJob, error) {
+	detail, err := d.ReadJobDetail(ctx, rawURL, config)
 	if err != nil {
 		return model.NormalizedJob{}, err
 	}
-	if djinniIsLoginPage(doc) {
-		return model.NormalizedJob{}, fmt.Errorf("djinni: the posting is behind a login wall")
-	}
-
-	title := strings.TrimSpace(doc.Find(`.detail--title, h1.detail--title, .job-post-page__title, h1`).First().Text())
-	company := strings.TrimSpace(doc.Find(`a[href^="/company/"], .js-analytics-company, [data-analytics="company_page"]`).First().Text())
-	description := htmlutil.SelectionText(doc.Find(`.job-post__description, .job-post-page__description, .js-original-text, [data-qa="job-description"], article`).First())
-	salary := strings.TrimSpace(doc.Find(`.public-salary-item, .job-additional-info-item .text-success, .text-success`).First().Text())
-	location := strings.TrimSpace(doc.Find(`.location-text, .job-additional-info-item .location`).First().Text())
-	postedAt, _ := doc.Find(`.job-post__details time, time[datetime]`).First().Attr("datetime")
-
-	bodyHTML, _ := doc.Find("body").Html()
-	bodyHTML = strutil.Truncate(bodyHTML, 8000)
-
-	job := model.NormalizedJob{
-		SourceKey:   d.Key(),
-		Title:       title,
-		Company:     company,
-		Location:    strutil.NilIfEmpty(location),
-		Remote:      djinniRemoteRe.MatchString(doc.Find("body").Text()),
-		SalaryRaw:   strutil.NilIfEmpty(salary),
-		URL:         djinniCanonicalPostingURL(rawURL),
-		Description: description,
-		Raw:         map[string]string{"html": bodyHTML},
-	}
-	if postedAt != "" {
-		job.PostedAt = &postedAt
-	}
+	job := detail.Normalized()
+	job.URL = djinniCanonicalPostingURL(rawURL)
 	if id := djinniPostingID(rawURL); id != "" {
 		job.ExternalID = &id
 	}

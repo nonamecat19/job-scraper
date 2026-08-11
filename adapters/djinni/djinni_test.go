@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/nonamecat19/job-scraper/adapter"
 	"github.com/nonamecat19/job-scraper/internal/scraping"
@@ -265,8 +266,13 @@ func TestDjinniReadPostingExtractsEveryField(t *testing.T) {
 	if job.SalaryRaw == nil || *job.SalaryRaw != "$5000-7000" {
 		t.Errorf("salaryRaw = %v", job.SalaryRaw)
 	}
-	if job.PostedAt == nil || *job.PostedAt != "2026-07-28T09:15:00+03:00" {
-		t.Errorf("postedAt = %v — it must come from the page, never from the add time", job.PostedAt)
+	// The instant must come from the page, never from the add time. It is
+	// normalised to UTC on the way out, so compare instants rather than bytes.
+	wantPosted, _ := time.Parse(time.RFC3339, "2026-07-28T09:15:00+03:00")
+	if job.PostedAt == nil {
+		t.Error("postedAt = nil — it must come from the page, never from the add time")
+	} else if got, err := time.Parse(time.RFC3339, *job.PostedAt); err != nil || !got.Equal(wantPosted) {
+		t.Errorf("postedAt = %v, want %v", *job.PostedAt, wantPosted)
 	}
 	if strings.Contains(job.URL, "?") {
 		t.Errorf("url = %q, want the tracking query dropped so the dedupe key matches a crawl", job.URL)
