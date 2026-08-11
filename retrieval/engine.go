@@ -6,258 +6,236 @@ import (
 	"log/slog"
 	"net/url"
 	"time"
+
+	"github.com/nonamecat19/jobscraper/ports"
 )
 
-var _ Service = (*engineImpl)(nil)
+// Engine is the bundled ports.Retriever: it walks a Ladder of strategies from
+// cheapest to costliest, remembers per host which one worked, and pauses hosts
+// that keep blocking it.
+//
+// The escalation itself is a chain of responsibility — each rung either
+// produces a page or hands the request up — with the per-host memory in
+// ports.StateStore deciding where the chain starts rather than always starting
+// at the bottom.
+type Engine struct {
+	ladder   *Ladder
+	store    ports.StateStore
+	detector ports.ChallengeDetector
+	log      *slog.Logger
 
-// EngineOpts is the plain-struct configuration the engine needs; the app maps
-// its own config onto it so the library stays free of app dependencies.
-type EngineOpts struct {
-	BrowserEnabled          bool
-	FlaresolverrURL         string
-	CheapRungRetestInterval time.Duration
-	CoolingOffThreshold     int
-	CoolingOffBaseDuration  time.Duration
+	retestInterval      time.Duration
+	coolingOffThreshold int
+	coolingOffBase      time.Duration
 }
 
-type engineImpl struct {
-	identity     *BrowserIdentity
-	store        StateStorePort
-	opts         EngineOpts
-	direct       *directRung
-	browser      *browserRung
-	flaresolverr *flareSolverrRung
+var _ ports.Retriever = (*Engine)(nil)
+
+// NewEngine builds the retrieval engine. With no options it produces a
+// direct-only engine, which is the zero-config path: a consumer with an
+// in-memory store and nothing else installed still gets working retrieval.
+//
+// Rungs whose dependency is missing are dropped from the ladder with a warning
+// rather than failing construction, so a machine without Chrome degrades to
+// direct-only instead of refusing to start.
+func NewEngine(store ports.StateStore, opts ...Option) *Engine {
+	cfg := newEngineConfig(opts)
+
+	ladder := cfg.ladder
+	if ladder == nil {
+		ladder = buildLadder(cfg, store)
+	}
+
+	return &Engine{
+		ladder:              ladder,
+		store:               store,
+		detector:            cfg.detector,
+		log:                 cfg.logger,
+		retestInterval:      cfg.cheapRungRetestInterval,
+		coolingOffThreshold: cfg.coolingOffThreshold,
+		coolingOffBase:      cfg.coolingOffBaseDuration,
+	}
 }
 
-// NewEngine builds the retrieval engine. A nil identity selects the built-in
-// default, so a consumer with no identity of its own can construct the engine
-// with NewEngine(nil, store, EngineOpts{}) and still climb the ladder.
-func NewEngine(identity *BrowserIdentity, store StateStorePort, opts EngineOpts) Service {
-	if identity == nil {
-		identity = DefaultBrowserIdentity()
-	}
-	svc := &engineImpl{
-		identity: identity,
-		store:    store,
-		opts:     opts,
-		direct:   newDirectRung(identity, store),
-	}
+func buildLadder(cfg *engineConfig, store ports.StateStore) *Ladder {
+	rungs := []Rung{NewDirectRung(cfg.identity, store, cfg.detector)}
 
-	if opts.BrowserEnabled {
-		browser, err := newBrowserRung()
+	if cfg.browserEnabled {
+		browser, err := NewBrowserRung(cfg.detector)
 		if err != nil {
-			slog.Warn("retrieval: browser rung unavailable, will skip", "error", err)
+			cfg.logger.Warn("retrieval: browser rung unavailable, will skip", "error", err)
 		} else {
-			svc.browser = browser
+			rungs = append(rungs, browser)
 		}
 	}
 
-	if opts.FlaresolverrURL != "" {
-		svc.flaresolverr = newFlareSolverrRung(opts.FlaresolverrURL)
-		slog.Info("retrieval: flaresolverr rung configured", "url", opts.FlaresolverrURL)
+	if cfg.flaresolverURL != "" {
+		rungs = append(rungs, NewFlareSolverrRung(cfg.flaresolverURL, cfg.detector))
+		cfg.logger.Info("retrieval: flaresolverr rung configured", "url", cfg.flaresolverURL)
 	}
 
-	return svc
+	rungs = append(rungs, cfg.extraRungs...)
+	return NewLadder(rungs...)
 }
 
-func (s *engineImpl) Close() {
-	if s.browser != nil {
-		s.browser.Close()
-	}
-	if s.flaresolverr != nil {
-		s.flaresolverr.Close()
-	}
-}
+// Ladder exposes the configured strategies, in cost order. Useful for
+// operator-facing diagnostics: it answers "what could this engine even try?".
+func (e *Engine) Ladder() *Ladder { return e.ladder }
 
-func (s *engineImpl) Fetch(ctx context.Context, req FetchRequest) (FetchResult, error) {
+// Close releases every rung.
+func (e *Engine) Close() error { return e.ladder.Close() }
+
+func (e *Engine) Fetch(ctx context.Context, req ports.FetchRequest) (ports.FetchResult, error) {
 	u, err := url.Parse(req.URL)
 	if err != nil {
-		return FetchResult{}, fmt.Errorf("retrieval: parse url %q: %w", req.URL, err)
+		return ports.FetchResult{}, fmt.Errorf("retrieval: parse url %q: %w", req.URL, err)
 	}
 	host := u.Host
 
-	state, err := s.store.Get(ctx, host)
+	state, err := e.store.Get(ctx, host)
 	if err != nil {
-		slog.Warn("retrieval: get state failed, proceeding with direct", "host", host, "error", err)
+		e.log.Warn("retrieval: get state failed, proceeding from cheapest rung", "host", host, "error", err)
 	}
 
+	// A host whose crawl-delay was never resolved gets it looked up in the
+	// background; this run proceeds at the default rate.
 	if state != nil && state.CrawlDelaySeconds == nil {
-		go func(h string) { _ = s.store.FetchAndSetCrawlDelay(context.Background(), h) }(host)
+		go func(h string) { _ = e.store.FetchAndSetCrawlDelay(context.Background(), h) }(host)
 	}
 
-	if state != nil && state.CoolingOffUntil != nil {
-		coolOff := *state.CoolingOffUntil
-		if time.Now().Before(coolOff) {
-			remaining := time.Until(coolOff).Round(time.Second)
-			return FetchResult{
-				Outcome: PageOutcome{
-					Status: PageDeferred,
-					Method: "none",
-					Reason: fmt.Sprintf("cooling off until %s (%s remaining)", coolOff.Format(time.RFC3339), remaining),
-					URL:    req.URL,
-				},
-			}, nil
-		}
+	if deferred, res := e.checkCoolingOff(state, req); deferred {
+		return res, nil
 	}
 
-	startRung := RungDirect
-	if state != nil {
-		if r, ok := RungForKey(state.CurrentRung); ok {
-			startRung = r
-		}
-		if startRung.Order > 0 && state.RungLastVerifiedAt != nil {
-			retestAfter := state.RungLastVerifiedAt.Add(s.opts.CheapRungRetestInterval)
-			if time.Now().After(retestAfter) {
-				slog.Info("retrieval: re-testing cheap rung", "host", host, "currentRung", startRung.Key)
-				startRung = RungDirect
-			}
-		}
+	rung := e.startRung(state, host)
+	if rung == nil {
+		return ports.FetchResult{
+			Outcome: outcome(ports.PageDeferred, "none", "no retrieval rungs configured", req.URL),
+		}, nil
 	}
 
-	currentRung := startRung
+	return e.climb(ctx, rung, host, req), nil
+}
+
+// climb runs the chain: try a rung, and on failure hand the request to the next
+// one up until a rung reads the page or the ladder is exhausted.
+func (e *Engine) climb(ctx context.Context, rung Rung, host string, req ports.FetchRequest) ports.FetchResult {
 	for {
-		rung := currentRung
-		outcome, body := s.tryRung(ctx, rung, req)
+		pageOutcome, body := rung.Fetch(ctx, req)
 
-		if outcome.Status == PageRead {
-			_ = s.store.RecordSuccess(ctx, host, rung.Key)
-			slog.Info("retrieval: success", "host", host, "rung", rung.Key)
-			return FetchResult{Outcome: outcome, Body: body}, nil
+		if pageOutcome.Status == ports.PageRead {
+			_ = e.store.RecordSuccess(ctx, host, rung.Key())
+			e.log.Info("retrieval: success", "host", host, "rung", rung.Key())
+			return ports.FetchResult{Outcome: pageOutcome, Body: body}
 		}
 
+		reason := string(pageOutcome.Status) + " via " + rung.Key()
+
+		// A credentialed request is pinned: replaying an authenticated session
+		// through a different transport invalidates it and risks the account.
 		if req.UsesUserAccount {
-			_ = s.recordBlock(ctx, host, string(outcome.Status)+" via "+rung.Key)
-			slog.Warn("retrieval: credential adapter blocked, not escalating", "host", host, "rung", rung.Key, "reason", outcome.Reason)
-			return FetchResult{Outcome: outcome, Body: body}, nil
+			_ = e.recordBlock(ctx, host, reason)
+			e.log.Warn("retrieval: credentialed source blocked, not escalating",
+				"host", host, "rung", rung.Key(), "reason", pageOutcome.Reason)
+			return ports.FetchResult{Outcome: pageOutcome, Body: body}
 		}
 
-		next, hasNext := rung.Next()
+		next, hasNext := e.ladder.Next(rung.Key())
 		if !hasNext {
-			_ = s.recordBlock(ctx, host, string(outcome.Status)+" via "+rung.Key)
-			slog.Warn("retrieval: all rungs exhausted", "host", host, "lastRung", rung.Key, "reason", outcome.Reason)
-			return FetchResult{Outcome: outcome, Body: body}, nil
+			_ = e.recordBlock(ctx, host, reason)
+			e.log.Warn("retrieval: all rungs exhausted",
+				"host", host, "lastRung", rung.Key(), "reason", pageOutcome.Reason)
+			return ports.FetchResult{Outcome: pageOutcome, Body: body}
 		}
 
-		if !s.rungAvailable(ctx, next) {
-			slog.Warn("retrieval: next rung unavailable, stopping escalation", "host", host, "from", rung.Key, "next", next.Key)
-			_ = s.recordBlock(ctx, host, string(outcome.Status)+" via "+rung.Key)
-			return FetchResult{Outcome: outcome, Body: body}, nil
+		if !next.Available(ctx) {
+			_ = e.recordBlock(ctx, host, reason)
+			e.log.Warn("retrieval: next rung unavailable, stopping escalation",
+				"host", host, "from", rung.Key(), "next", next.Key())
+			return ports.FetchResult{Outcome: pageOutcome, Body: body}
 		}
 
-		slog.Info("retrieval: escalating rung", "host", host, "from", rung.Key, "to", next.Key, "reason", outcome.Reason)
-		currentRung = next
+		e.log.Info("retrieval: escalating rung",
+			"host", host, "from", rung.Key(), "to", next.Key(), "reason", pageOutcome.Reason)
+		rung = next
 	}
 }
 
-func (s *engineImpl) tryRung(ctx context.Context, rung RetrievalMethod, req FetchRequest) (PageOutcome, string) {
-	switch rung.Key {
-	case RungDirect.Key:
-		return s.tryDirect(ctx, req)
-	case RungBrowser.Key:
-		return s.tryBrowser(ctx, req)
-	case RungFlareSolverr.Key:
-		return s.tryFlareSolverr(ctx, req)
-	default:
-		return PageOutcome{Status: PageChallenged, Method: rung.Key, Reason: "unknown rung", URL: req.URL}, ""
+// checkCoolingOff reports whether host is currently paused, and if so the
+// deferral to return instead of fetching.
+func (e *Engine) checkCoolingOff(state *ports.HostState, req ports.FetchRequest) (bool, ports.FetchResult) {
+	if state == nil || state.CoolingOffUntil == nil {
+		return false, ports.FetchResult{}
+	}
+	coolOff := *state.CoolingOffUntil
+	if !time.Now().Before(coolOff) {
+		return false, ports.FetchResult{}
+	}
+	remaining := time.Until(coolOff).Round(time.Second)
+	reason := fmt.Sprintf("cooling off until %s (%s remaining)", coolOff.Format(time.RFC3339), remaining)
+	return true, ports.FetchResult{
+		Outcome: outcome(ports.PageDeferred, "none", reason, req.URL),
 	}
 }
 
-func (s *engineImpl) tryDirect(ctx context.Context, req FetchRequest) (PageOutcome, string) {
-	body, statusCode, err := s.direct.Fetch(ctx, req.URL, req.Headers)
-	if err != nil {
-		return PageOutcome{Status: PageChallenged, Method: "direct", Reason: err.Error(), URL: req.URL}, body
-	}
-	if IsChallenged(body, statusCode) {
-		return PageOutcome{Status: PageChallenged, Method: "direct", Reason: fmt.Sprintf("challenge detected (status %d)", statusCode), URL: req.URL}, body
-	}
-	if IsRefused(body, statusCode) {
-		return PageOutcome{Status: PageRefused, Method: "direct", Reason: fmt.Sprintf("refused (status %d)", statusCode), URL: req.URL}, body
-	}
-	return PageOutcome{Status: PageRead, Method: "direct", URL: req.URL}, body
-}
-
-func (s *engineImpl) tryBrowser(ctx context.Context, req FetchRequest) (PageOutcome, string) {
-	if s.browser == nil {
-		return PageOutcome{Status: PageChallenged, Method: "browser", Reason: "browser not available", URL: req.URL}, ""
-	}
-	body, err := s.browser.Fetch(ctx, req.URL)
-	if err != nil {
-		if ctx.Err() != nil {
-			return PageOutcome{Status: PageChallenged, Method: "browser", Reason: "context cancelled", URL: req.URL}, body
-		}
-		return PageOutcome{Status: PageChallenged, Method: "browser", Reason: err.Error(), URL: req.URL}, body
-	}
-	if IsChallenged(body, 200) {
-		return PageOutcome{Status: PageChallenged, Method: "browser", Reason: "challenge detected", URL: req.URL}, body
-	}
-	return PageOutcome{Status: PageRead, Method: "browser", URL: req.URL}, body
-}
-
-func (s *engineImpl) tryFlareSolverr(ctx context.Context, req FetchRequest) (PageOutcome, string) {
-	if s.flaresolverr == nil {
-		return PageOutcome{Status: PageChallenged, Method: "flaresolverr", Reason: "flaresolverr not configured", URL: req.URL}, ""
-	}
-	body, statusCode, err := s.flaresolverr.Fetch(ctx, req.URL)
-	if err != nil {
-		if ctx.Err() != nil {
-			return PageOutcome{Status: PageChallenged, Method: "flaresolverr", Reason: "context cancelled", URL: req.URL}, body
-		}
-		return PageOutcome{Status: PageChallenged, Method: "flaresolverr", Reason: err.Error(), URL: req.URL}, body
-	}
-	if statusCode >= 500 {
-		return PageOutcome{Status: PageChallenged, Method: "flaresolverr", Reason: fmt.Sprintf("server error (status %d)", statusCode), URL: req.URL}, body
-	}
-	if IsChallenged(body, statusCode) {
-		return PageOutcome{Status: PageChallenged, Method: "flaresolverr", Reason: "challenge detected", URL: req.URL}, body
-	}
-	if IsRefused(body, statusCode) {
-		return PageOutcome{Status: PageRefused, Method: "flaresolverr", Reason: fmt.Sprintf("refused (status %d)", statusCode), URL: req.URL}, body
-	}
-	return PageOutcome{Status: PageRead, Method: "flaresolverr", URL: req.URL}, body
-}
-
-func (s *engineImpl) rungAvailable(ctx context.Context, rung RetrievalMethod) bool {
-	switch rung.Key {
-	case RungBrowser.Key:
-		return s.browser != nil
-	case RungFlareSolverr.Key:
-		return s.flaresolverr != nil && s.flaresolverr.Available(ctx)
-	default:
-		return true
-	}
-}
-
-func (s *engineImpl) recordBlock(ctx context.Context, host string, reason string) error {
-	if err := s.store.RecordBlock(ctx, host, reason); err != nil {
-		return err
-	}
-	state, err := s.store.Get(ctx, host)
-	if err != nil {
-		return err
-	}
+// startRung picks where the chain begins: the rung this host last needed, or
+// the cheapest one when there is no history or the learned preference is due
+// for a re-test.
+func (e *Engine) startRung(state *ports.HostState, host string) Rung {
 	if state == nil {
+		return e.ladder.First()
+	}
+	rung, ok := e.ladder.Find(state.CurrentRung)
+	if !ok {
+		return e.ladder.First()
+	}
+	if e.ladder.IsCheapest(rung.Key()) {
+		return rung
+	}
+	if e.retestInterval > 0 && state.RungLastVerifiedAt != nil {
+		if time.Now().After(state.RungLastVerifiedAt.Add(e.retestInterval)) {
+			e.log.Info("retrieval: re-testing cheap rung", "host", host, "currentRung", rung.Key())
+			return e.ladder.First()
+		}
+	}
+	return rung
+}
+
+// recordBlock stores the block and, once a host has crossed the threshold,
+// pauses it. The pause doubles for each block past the threshold, so a host
+// that keeps refusing is backed off from exponentially rather than hammered.
+func (e *Engine) recordBlock(ctx context.Context, host string, reason string) error {
+	if err := e.store.RecordBlock(ctx, host, reason); err != nil {
+		return err
+	}
+	state, err := e.store.Get(ctx, host)
+	if err != nil {
+		return err
+	}
+	if state == nil || state.ConsecutiveBlocks < int32(e.coolingOffThreshold) {
 		return nil
 	}
-	if state.ConsecutiveBlocks >= int32(s.opts.CoolingOffThreshold) {
-		excess := state.ConsecutiveBlocks - int32(s.opts.CoolingOffThreshold)
-		duration := s.opts.CoolingOffBaseDuration
-		if excess > 0 {
-			duration = duration * time.Duration(1<<excess)
-		}
-		coolOff := time.Now().Add(duration)
-		state.CoolingOffUntil = &coolOff
-		_ = s.store.Upsert(ctx, host, state)
-		slog.Warn("retrieval: cooling off activated", "host", host, "duration", duration, "until", coolOff.Format(time.RFC3339))
+
+	excess := state.ConsecutiveBlocks - int32(e.coolingOffThreshold)
+	duration := e.coolingOffBase
+	if excess > 0 {
+		duration *= time.Duration(1 << excess)
 	}
+	coolOff := time.Now().Add(duration)
+	state.CoolingOffUntil = &coolOff
+	_ = e.store.Upsert(ctx, host, state)
+	e.log.Warn("retrieval: cooling off activated",
+		"host", host, "duration", duration, "until", coolOff.Format(time.RFC3339))
 	return nil
 }
 
-func (s *engineImpl) HostStatus(ctx context.Context, host string) (HostStatus, error) {
-	state, err := s.store.Get(ctx, host)
+func (e *Engine) HostStatus(ctx context.Context, host string) (ports.HostStatus, error) {
+	state, err := e.store.Get(ctx, host)
 	if err != nil {
-		return HostStatus{}, err
+		return ports.HostStatus{}, err
 	}
-	status := HostStatus{Host: host}
+
+	status := ports.HostStatus{Host: host}
 	if state != nil {
 		status.IdentityVersion = state.IdentityVersion
 		status.CurrentRung = state.CurrentRung
@@ -277,8 +255,9 @@ func (s *engineImpl) HostStatus(ctx context.Context, host string) (HostStatus, e
 			status.CoolingOffUntil = &t
 		}
 	}
+
 	rps, source := DefaultTransport.RateFor(host)
-	status.Pacing = HostPacing{
+	status.Pacing = ports.HostPacing{
 		RequestsPerSecond: rps,
 		IntervalSeconds:   1 / rps,
 		Source:            source,
@@ -286,16 +265,16 @@ func (s *engineImpl) HostStatus(ctx context.Context, host string) (HostStatus, e
 	return status, nil
 }
 
-func (s *engineImpl) ClearRungPreference(ctx context.Context, host string) error {
-	return s.store.ClearRung(ctx, host)
+func (e *Engine) ClearRungPreference(ctx context.Context, host string) error {
+	return e.store.ClearRung(ctx, host)
 }
 
-func (s *engineImpl) ClearCookies(ctx context.Context, host string) error {
-	return s.store.ClearCookies(ctx, host)
+func (e *Engine) ClearCookies(ctx context.Context, host string) error {
+	return e.store.ClearCookies(ctx, host)
 }
 
-func (s *engineImpl) OverrideCoolingOff(ctx context.Context, host string) (time.Duration, error) {
-	state, err := s.store.Get(ctx, host)
+func (e *Engine) OverrideCoolingOff(ctx context.Context, host string) (time.Duration, error) {
+	state, err := e.store.Get(ctx, host)
 	if err != nil {
 		return 0, err
 	}
@@ -305,7 +284,7 @@ func (s *engineImpl) OverrideCoolingOff(ctx context.Context, host string) (time.
 	remaining := time.Until(*state.CoolingOffUntil)
 	state.CoolingOffUntil = nil
 	state.ConsecutiveBlocks = 0
-	if err := s.store.Upsert(ctx, host, state); err != nil {
+	if err := e.store.Upsert(ctx, host, state); err != nil {
 		return 0, err
 	}
 	if remaining < 0 {

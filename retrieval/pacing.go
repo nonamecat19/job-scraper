@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"golang.org/x/time/rate"
+
+	"github.com/nonamecat19/jobscraper/ports"
 )
 
 const rateResolutionTTL = 5 * time.Minute
@@ -140,16 +142,16 @@ func isLoopback(hostname string) bool {
 
 var DefaultTransport = NewTransport(nil)
 
-func NewDefaultTransport(store StateStorePort, overrides map[string]float64) *Transport {
+func NewDefaultTransport(store ports.StateStore, overrides map[string]float64) *Transport {
 	ConfigureDefaultTransport(store, overrides)
 	return DefaultTransport
 }
 
-func ConfigureDefaultTransport(store StateStorePort, overrides map[string]float64) {
+func ConfigureDefaultTransport(store ports.StateStore, overrides map[string]float64) {
 	DefaultTransport.RateResolver = NewRateResolver(store, overrides)
 }
 
-func NewRateResolver(store StateStorePort, overrides map[string]float64) func(host string) (float64, string, bool) {
+func NewRateResolver(store ports.StateStore, overrides map[string]float64) func(host string) (float64, string, bool) {
 	return func(host string) (float64, string, bool) {
 		if rps, ok := overrides[host]; ok && rps > 0 {
 			return rps, "override", true
