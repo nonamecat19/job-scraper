@@ -19,6 +19,7 @@ import (
 	_ "github.com/nonamecat19/job-scraper/adapters/ashby"
 	_ "github.com/nonamecat19/job-scraper/adapters/djinni"
 	_ "github.com/nonamecat19/job-scraper/adapters/dou"
+	_ "github.com/nonamecat19/job-scraper/adapters/euremotejobs"
 	_ "github.com/nonamecat19/job-scraper/adapters/glassdoor"
 	_ "github.com/nonamecat19/job-scraper/adapters/greenhouse"
 	_ "github.com/nonamecat19/job-scraper/adapters/himalayas"
