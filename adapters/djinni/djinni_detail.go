@@ -129,6 +129,10 @@ func ParseJobDetail(doc *goquery.Document, sourceURL string) (model.JobDetail, e
 		},
 
 		Content: model.Content{
+			// The JSON-LD description is Djinni's own SEO summary, silently capped
+			// short (it ends mid-sentence with "..." past a few hundred chars) — it
+			// is a fallback, not the primary source. body's job-post__description
+			// carries the whole posting.
 			Description:     jobdetail.PlainText(strings.TrimSpace(ld.Description)),
 			MetaDescription: jobdetail.PlainText(squashAttr(doc.Find(`meta[name="description"]`).First(), "content")),
 			OGImage:         attrOf(doc.Find(`meta[property="og:image"]`).First(), "content"),
@@ -154,8 +158,10 @@ func ParseJobDetail(doc *goquery.Document, sourceURL string) (model.JobDetail, e
 	if html, err := doc.Find(`.job-post__description`).First().Html(); err == nil {
 		detail.Content.DescriptionHTML = strings.TrimSpace(html)
 	}
-	if detail.Content.Description == "" {
-		detail.Content.Description = jobdetail.PlainText(squashText(doc.Find(`.job-post__description`).First()))
+	// The body block is the whole posting; the JSON-LD summary above is only
+	// used when the body itself is missing (a fixture, a stripped-down page).
+	if bodyText := jobdetail.PlainText(squashText(doc.Find(`.job-post__description`).First())); bodyText != "" {
+		detail.Content.Description = bodyText
 	}
 
 	applyPublicationInfo(doc, &detail)
