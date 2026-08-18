@@ -85,6 +85,11 @@ func (d Source) fetchParse(ctx context.Context, pageURL string, headers map[stri
 func (Source) Key() string            { return Key }
 func (Source) Kind() model.SourceKind { return model.SourceKindScrape }
 
+// NeedsDetail reports that a search-listing card carries only Djinni's own
+// truncated summary, not the full posting — a detail-page pass (FetchDetail)
+// is required to get the whole description.
+func (Source) NeedsDetail() bool { return true }
+
 func (d Source) Search(ctx context.Context, query model.SearchQuery, _ map[string]any) ([]model.NormalizedJob, error) {
 	headers, err := d.authHeaders(ctx)
 	if err != nil {
